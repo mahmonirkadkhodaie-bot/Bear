@@ -9,61 +9,45 @@
     <style>
       body { margin: 0; overflow: hidden; }
       
-      /* دکمه زردرنگ شروع */
       #ui-layer {
         position: fixed; bottom: 30px; left: 0; width: 100%;
         display: none !important; justify-content: center; z-index: 99999;
+        pointer-events: none;
       }
       #play-btn {
-        padding: 15px 40px; background: #ffcc00; color: black;
+        pointer-events: auto; padding: 15px 40px; background: #ffcc00; color: black;
         font-weight: bold; border: none; border-radius: 30px;
         font-family: Tahoma, sans-serif; font-size: 16px; cursor: pointer;
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      }
-      
-      /* کادر سیاه ویدیو */
-      #video-container {
-        display: none !important; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.98); z-index: 999999;
-        justify-content: center; align-items: center; flex-direction: column;
-      }
-      #my-video {
-        width: 90%; max-height: 75vh; border-radius: 15px; outline: none;
-        display: block;
-      }
-      #close-btn {
-        margin-top: 20px; padding: 12px 35px; background: white; color: black;
-        font-weight: bold; border: none; border-radius: 20px;
-        font-family: Tahoma, sans-serif; cursor: pointer;
       }
     </style>
   </head>
   <body>
     
-    <!-- لایه دکمه زردرنگ -->
     <div id="ui-layer">
       <button id="play-btn">شروع ویدیو</button>
     </div>
 
-    <!-- لایه پخش ویدیو -->
-    <div id="video-container">
-      <!-- ما کنترلرها را فعال می‌گذاریم تا به عنوان پلن B کاربر بتواند پلی کند -->
-      <video id="my-video" src="https://www.w3schools.com/html/mov_bbb.mp4" playsinline webkit-playsinline controls preload="auto"></video>
-      <button id="close-btn">بستن</button>
-    </div>
-
-    <!-- صحنه AR -->
+    <!-- صحنه واقعیت افزوده -->
     <a-scene mindar-image="imageTargetSrc: targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-assets>
         <a-asset-item id="bear-model" src="bear.glb"></a-asset-item>
+        <!-- ویدیو مستقیماً در دارایی‌های سه‌بعدی لود می‌شود -->
+        <video id="my-video" src="video2.mp4" playsinline webkit-playsinline crossorigin="anonymous" loop="false"></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
       
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- سایز خرس 0.005 فیت شد -->
-        <a-gltf-model src="#bear-model" position="0 0.5 0" scale="0.005 0.005 0.005" rotation="0 0 0" animation-mixer></a-gltf-model>
+        
+        <!-- مدل خرس -->
+        <a-gltf-model id="bear-entity" src="#bear-model" position="0 0.5 0" scale="0.005 0.005 0.005" rotation="0 0 0" animation-mixer></a-gltf-model>
+        
+        <!-- صفحه نمایش ویدیو (جایگزین کادر سیاه قبلی) - فعلاً مخفی -->
+        <!-- ابعاد متناسب با ویدیوی عمودی تنظیم شده است -->
+        <a-video id="ar-video-screen" src="#my-video" position="0 0.5 0.1" width="0.6" height="1" visible="false"></a-video>
+        
       </a-entity>
       
     </a-scene>
@@ -72,52 +56,34 @@
       const targetEntity = document.querySelector('[mindar-image-target]');
       const uiLayer = document.querySelector('#ui-layer');
       const playBtn = document.querySelector('#play-btn');
-      const videoContainer = document.querySelector('#video-container');
       const video = document.querySelector('#my-video');
-      const closeBtn = document.querySelector('#close-btn');
+      const bear = document.querySelector('#bear-entity');
+      const arScreen = document.querySelector('#ar-video-screen');
 
-      // پیدا شدن جعبه
+      // جعبه پیدا شد
       targetEntity.addEventListener("targetFound", () => {
         uiLayer.style.setProperty('display', 'flex', 'important');
-        // یک دستور بارگذاری پیش‌دستانه برای آماده‌سازی ویدیو
-        video.load();
       });
 
-      // گم شدن جعبه
+      // جعبه گم شد
       targetEntity.addEventListener("targetLost", () => {
         uiLayer.style.setProperty('display', 'none', 'important');
-      });
-
-      // کلیک روی دکمه زردرنگ شروع
-      playBtn.addEventListener('click', () => {
-        // ۱. اول کادر سیاه را نشان بده
-        videoContainer.style.setProperty('display', 'flex', 'important');
-        
-        // ۲. یک دستور بارگذاری مجدد ویدیوی جدید
-        video.load();
-        
-        // ۳. تلاش برای پخش
-        let playPromise = video.play();
-        
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            // ویدیو با موفقیت و صدا شروع به پخش کرد (پلن A)
-            // در این حالت کنترلرهای پیش‌فرض را مخفی می‌کنیم تا تمیز باشد
-            video.controls = false;
-          }).catch(error => {
-            // آیفون اجازه نداد اتوماتیک پلی شود (پلن B)
-            console.log("مرورگر پخش اتوماتیک را مسدود کرد. کاربر باید روی ویدیو بزند.");
-            // کنترلرهای خود ویدیو را نشان می‌دهیم تا کاربر روی علامت پلی بزند
-            video.controls = true;
-          });
-        }
-      });
-
-      // دکمه بستن
-      closeBtn.addEventListener('click', () => {
-        videoContainer.style.setProperty('display', 'none', 'important');
         video.pause();
-        video.currentTime = 0;
+        // برگرداندن حالت اولیه
+        bear.setAttribute('visible', 'true');
+        arScreen.setAttribute('visible', 'false');
+        playBtn.innerText = "شروع ویدیو";
+      });
+
+      // کلیک روی دکمه شروع
+      playBtn.addEventListener('click', () => {
+        // خرس محو می‌شود و صفحه ویدیو ظاهر می‌شود
+        bear.setAttribute('visible', 'false');
+        arScreen.setAttribute('visible', 'true');
+        
+        // پخش ویدیو روی سطح سه‌بعدی
+        video.play();
+        playBtn.innerText = "در حال پخش...";
       });
     </script>
   </body>
