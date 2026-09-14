@@ -33,6 +33,7 @@
         margin-top: 20px; padding: 10px 30px; background: white; color: black;
         font-weight: bold; border: none; border-radius: 20px;
         font-family: Tahoma, sans-serif; cursor: pointer;
+        <video id="my-video" src="video.mp4" playsinline webkit-playsinline controls preload="auto"></video>
       }
     </style>
   </head>
@@ -59,8 +60,7 @@
       
       <a-entity mindar-image-target="targetIndex: 0">
         <!-- مدل خرس با دستور انیمیشن. ارتفاع Y روی 0.5 تنظیم شده تا بالاتر از مرکز قرار بگیرد -->
-        <a-gltf-model src="#bear-model" position="0 0.5 0" scale="0.1 0.1 0.1" rotation="0 0 0" animation-mixer></a-gltf-model>
-      </a-entity>
+       <a-gltf-model src="#bear-model" position="0 0.5 0" scale="0.01 0.01 0.01" rotation="0 0 0" animation-mixer></a-gltf-model>
     </a-scene>
 
     <script>
