@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AR Bear Packaging</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <!-- کتابخانه خواندن انیمیشن مدل سه‌بعدی -->
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+    <style>
+      /* ظاهر شدن دکمه شروع در پایین صفحه */
+      #ui-layer {
+        position: absolute; bottom: 30px; left: 0; width: 100%;
+        display: none; justify-content: center; z-index: 100;
+      }
+      #play-btn {
+        padding: 12px 30px; background: #ffcc00; color: black;
+        font-weight: bold; border: none; border-radius: 25px;
+        font-family: Tahoma, sans-serif; font-size: 16px; cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      }
+      /* کادر ویدیوی عمودی */
+      #video-container {
+        display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); z-index: 999;
+        justify-content: center; align-items: center; flex-direction: column;
+      }
+      #my-video {
+        width: 85%; max-height: 80vh; border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;
+      }
+      #close-btn {
+        margin-top: 20px; padding: 10px 30px; background: white; color: black;
+        font-weight: bold; border: none; border-radius: 20px;
+        font-family: Tahoma, sans-serif; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <!-- دکمه رابط کاربری -->
+    <div id="ui-layer">
+      <button id="play-btn">شروع ویدیو</button>
+    </div>
+
+    <!-- لایه پخش ویدیو -->
+    <div id="video-container">
+      <video id="my-video" src="video.mp4" playsinline webkit-playsinline preload="auto"></video>
+      <button id="close-btn">بستن ویدیو</button>
+    </div>
+
+    <!-- صحنه واقعیت افزوده -->
+    <a-scene mindar-image="imageTargetSrc: targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      <a-assets>
+        <a-asset-item id="bear-model" src="bear.glb"></a-asset-item>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      
+      <a-entity mindar-image-target="targetIndex: 0">
+        <!-- مدل خرس با دستور انیمیشن. ارتفاع Y روی 0.5 تنظیم شده تا بالاتر از مرکز قرار بگیرد -->
+        <a-gltf-model src="#bear-model" position="0 0.5 0" scale="0.1 0.1 0.1" rotation="0 0 0" animation-mixer></a-gltf-model>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const targetEntity = document.querySelector('[mindar-image-target]');
+      const uiLayer = document.querySelector('#ui-layer');
+      const playBtn = document.querySelector('#play-btn');
+      const videoContainer = document.querySelector('#video-container');
+      const video = document.querySelector('#my-video');
+      const closeBtn = document.querySelector('#close-btn');
+
+      // ظاهر شدن دکمه با اسکن مقوا
+      targetEntity.addEventListener("targetFound", () => {
+        uiLayer.style.display = 'flex';
+      });
+
+      // مخفی شدن دکمه اگر دوربین از روی مقوا کنار برود
+      targetEntity.addEventListener("targetLost", () => {
+        uiLayer.style.display = 'none';
+      });
+
+      // کلیک روی دکمه شروع
+      playBtn.addEventListener('click', () => {
+        videoContainer.style.display = 'flex';
+        video.play();
+      });
+
+      // کلیک روی دکمه بستن
+      closeBtn.addEventListener('click', () => {
+        videoContainer.style.display = 'none';
+        video.pause();
+        video.currentTime = 0; 
+      });
+    </script>
+  </body>
+</html>
