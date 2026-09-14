@@ -2,38 +2,33 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AR Bear Packaging</title>
+    <title>AR Pediatric Packaging</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
     <style>
-      /* لایه رابط کاربری با قدرت کلیک‌پذیری بالا */
+      body { margin: 0; overflow: hidden; }
+      
+      /* دکمه کاملاً مخفی قبل از اسکن */
       #ui-layer {
-        position: absolute; bottom: 30px; left: 0; width: 100%;
-        display: none; justify-content: center; 
-        z-index: 99999; /* عدد بسیار بالا برای شکستن شیشه نامرئی */
-        pointer-events: none; /* اجازه می‌دهد بقیه صفحه لمس شود */
+        position: fixed; bottom: 30px; left: 0; width: 100%;
+        display: none !important; justify-content: center; z-index: 99999;
       }
-    playBtn.addEventListener('click', () => {
-        videoContainer.style.display = 'flex';
-        video.currentTime = 0;
-        video.play().then(() => {
-          // ویدیو با موفقیت پخش شد
-        }).catch(err => {
-          console.log("خطا در پخش:", err);
-          // اگر مرورگر ارور داد، کنترلرهای دستی را فعال می‌کنیم تا کاربر خودش بزند
-          video.controls = true;
-        });
-      });
+      #play-btn {
+        padding: 15px 40px; background: #ffcc00; color: black;
+        font-weight: bold; border: none; border-radius: 30px;
+        font-family: Tahoma, sans-serif; font-size: 16px; cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       }
+      
+      /* کادر ویدیو کاملاً مخفی قبل از اسکن */
       #video-container {
-        display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.9); z-index: 999999;
+        display: none !important; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95); z-index: 999999;
         justify-content: center; align-items: center; flex-direction: column;
       }
       #my-video {
-        width: 85%; max-height: 80vh; border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;
+        width: 90%; max-height: 75vh; border-radius: 15px; outline: none;
       }
       #close-btn {
         margin-top: 20px; padding: 10px 30px; background: white; color: black;
@@ -49,22 +44,23 @@
     </div>
 
     <div id="video-container">
-      <!-- ویدیو فعلا میوت شده تا باگ مرورگر رو دور بزنیم -->
-      <video id="my-video" src="video.mp4" playsinline webkit-playsinline controls preload="auto" muted></video>
+      <video id="my-video" src="video2.mp4" playsinline webkit-playsinline controls preload="auto"></video>
       <button id="close-btn">بستن ویدیو</button>
     </div>
 
     <a-scene mindar-image="imageTargetSrc: targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      
       <a-assets>
         <a-asset-item id="bear-model" src="bear.glb"></a-asset-item>
       </a-assets>
-<a-gltf-model src="#bear-model" position="0 0.3 0" scale="0.007 0.007 0.007" rotation="0 0 0" animation-mixer></a-gltf-model>
+
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
       
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- سایز خرس روی 0.02 تنظیم شد -->
-      <a-gltf-model src="#bear-model" position="0 0.5 0" scale="0.025 0.025 0.025" rotation="0 0 0" animation-mixer></a-gltf-model>
+        <!-- سایز خرس دقیقاً روی 0.005 تنظیم شده است -->
+        <a-gltf-model src="#bear-model" position="0 0.5 0" scale="0.009 0.009 0.009" rotation="0 0 0" animation-mixer></a-gltf-model>
       </a-entity>
+      
     </a-scene>
 
     <script>
@@ -76,25 +72,27 @@
       const closeBtn = document.querySelector('#close-btn');
 
       targetEntity.addEventListener("targetFound", () => {
-        uiLayer.style.display = 'flex';
+        uiLayer.style.setProperty('display', 'flex', 'important');
       });
 
       targetEntity.addEventListener("targetLost", () => {
-        uiLayer.style.display = 'none';
+        uiLayer.style.setProperty('display', 'none', 'important');
       });
 
       playBtn.addEventListener('click', () => {
-        videoContainer.style.display = 'flex';
-        // اول به ویدیو میگیم لود شو بعد پلی شو
-        video.play().catch(function(error) {
-          console.log("پخش خودکار توسط مرورگر مسدود شد");
-        });
+        videoContainer.style.setProperty('display', 'flex', 'important');
+        video.currentTime = 0;
+        let playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log("مرورگر منتظر لمس دستیِ کاربر روی خود ویدیو است.");
+          });
+        }
       });
 
       closeBtn.addEventListener('click', () => {
-        videoContainer.style.display = 'none';
+        videoContainer.style.setProperty('display', 'none', 'important');
         video.pause();
-        video.currentTime = 0; 
       });
     </script>
   </body>
